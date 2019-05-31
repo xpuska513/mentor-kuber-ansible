@@ -1,0 +1,44 @@
+---
+# tasks file for mysql
+
+- name: Install mysql package
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - mysql-client
+    - mysql-server
+    - libmysqlclient-dev
+    - python-mysqldb
+
+- name: Create `/root/.my.cnf`  with root password credentials
+  template:
+    src:  my.cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    mode: 0600
+  become: yes
+
+- include_tasks: restart_mysql.yml
+
+- name: Remove the test database
+  mysql_db: name=test state=absent
+
+- name: Create root user for mysql
+  mysql_user: user="root" host="%" password={{mysql_root_password}}
+
+
+- name: Ensure anonymous users are not in the database
+  mysql_user: user='' host=$item state=absent
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - localhost
+
+
+- name: Update mysql root password for all root accounts
+  mysql_user: name=root host={{item}} password={{mysql_root_password}}
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - localhost

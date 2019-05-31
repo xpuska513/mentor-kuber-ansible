@@ -1,0 +1,20 @@
+- name: Install and configure mysql
+  roles: 
+    - mysql
+  hosts: mysql
+  become: yes
+
+- name: Kubernetes master
+  hosts: kubernetes_master
+  become: yes
+  roles:
+    - kubernetes_prepeare
+    - kubernetes_master
+  
+
+- name: Kubernetes worker
+  hosts: kubernetes_workers
+  become: yes
+  roles:
+    - kubernetes_prepeare
+    - kubernetes_worker
