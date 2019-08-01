@@ -1,0 +1,13 @@
+- name: Add gpg key for repos
+  rpm_key:
+    key: [https://packages.cloud.google.com/yum/doc/yum-key.gpg,https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg]
+- name: Add kubernetes and docker repo
+  yum_repository:
+    name: [docker,kubernetes]
+    baseurl: [https://download.docker.com/linux/centos/docker-ce.repo,https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64]
+    gpgcheck: yes
+    repo_gpgcheck: yes
+- name: Install docker and kubernetes
+  yum:
+    name: [docker-ce,kubelet,kubeadm,kubectl]
+    state: present

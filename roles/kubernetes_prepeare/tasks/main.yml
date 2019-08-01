@@ -1,29 +1,7 @@
 ---
 # tasks file for kubernetes_prepeare
 
-- name: Add key for kuber repo
-  apt_key:
-    url: "{{ item }}"
-    state: present
-  with_items:
-    - https://download.docker.com/linux/ubuntu/gpg
-    - https://packages.cloud.google.com/apt/doc/apt-key.gpg
-
-- name: Add docker and google repo
-  apt_repository:
-    repo: "{{ item }}"
-    state: present
-    update_cache: yes
-  with_items:
-    - deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
-    - deb https://apt.kubernetes.io/ kubernetes-xenial main
-
-- name: Install docker-ce and kubernetes stuff
-  apt:
-    name: "{{ item }}"
-  with_items:
-    - docker-ce 
-    - kubelet 
-    - kubeadm 
-    - kubectl
-
+- include_tasks: centos.yml
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7")
+- include_tasks: ubuntu.yml
+  when: (ansible_facts['distribution'] == "Ubuntu" and ansible_facts['distribution_major_version'] == "16")

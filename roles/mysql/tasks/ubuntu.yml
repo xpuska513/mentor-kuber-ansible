@@ -1,0 +1,9 @@
+- name: Install mysql package
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - mysql-client
+    - mysql-server
+    - libmysqlclient-dev
+    - python-mysqldb

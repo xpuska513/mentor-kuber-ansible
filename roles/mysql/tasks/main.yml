@@ -1,15 +1,15 @@
 ---
 # tasks file for mysql
 
-- name: Install mysql package
-  apt:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - mysql-client
-    - mysql-server
-    - libmysqlclient-dev
-    - python-mysqldb
+- include_tasks: centos.yml
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7")
+- include_tasks: ubuntu.yml
+  when: (ansible_facts['distribution'] == "Ubuntu" and ansible_facts['distribution_major_version'] == "16")
+  
+- name: Enable mysql service
+  service:
+    name: mysql
+    enabled: yes
 
 - name: Create `/root/.my.cnf`  with root password credentials
   template:
@@ -18,8 +18,7 @@
     owner: root
     mode: 0600
   become: yes
-
-- include_tasks: restart_mysql.yml
+  notify: Restart MySQL
 
 - name: Remove the test database
   mysql_db: name=test state=absent

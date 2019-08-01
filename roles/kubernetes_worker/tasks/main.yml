@@ -6,7 +6,9 @@
     url: http://localhost:10248/healthz
   register: node_status
   ignore_errors: yes
-
+- name: Debug
+  debug:
+    msg: var={{ node_status }}
 - name: Join kubernetes cluster
-  shell: kubeadm join {{ hostvars[groups.kubernetes_master.0].ansible_default_ipv4.address }}:6443 --token {{ hostvars['K8S_TOKEN_HOLDER']['token'] }} --discovery-token-ca-cert-hash sha256:{{ hostvars['K8S_TOKEN_HOLDER']['hash'] }}
-  when: "'Connection refused' in node_status"
+  shell: kubeadm join {{ hostvars[groups.tag_masters.0].ansible_default_ipv4.address }}:6443 --token {{ hostvars['K8S_TOKEN_HOLDER']['token'] }} --discovery-token-ca-cert-hash sha256:{{ hostvars['K8S_TOKEN_HOLDER']['hash'] }}
+  when: node_status.status != 200

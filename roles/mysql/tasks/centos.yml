@@ -1,0 +1,13 @@
+- name: Add mysql repo
+  yum_repository:
+    name: mysql
+    baseurl: https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm
+
+- name: Install mysql package
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - mysql
+    - mariadb-devel
+    - MySQL-python

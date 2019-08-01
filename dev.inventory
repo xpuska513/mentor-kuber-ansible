@@ -1,0 +1,7 @@
+[mysql]
+35.222.97.100
+[kubernetes_master]
+35.222.97.100
+[kubernetes_worker]
+35.225.116.199
+35.232.36.38

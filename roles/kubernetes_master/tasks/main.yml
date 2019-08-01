@@ -1,24 +1,37 @@
 ---
 # tasks file for kubernetes_master
+
+
 - name: Check for inited cluster
   shell: kubectl get nodes
   register: init_out
+  ignore_errors: yes
+  changed_when: init_out.rc > 0
+
+- name: debug
+  debug:
+    msg: var={{ init_out.rc }}
 
 - name: Init kubernetes cluster
   shell: kubeadm init --pod-network-cidr=10.244.0.0/16
-  when: "'The connection to the server localhost:8080 was refused' in init_out.stdout"
+  when: init_out.rc > 0
 
-- name: Copy kubeconfig to users directory
-  shell: > 
-    if [[  ! -d '${HOME}/.kube' ]]; then
-      mkdir -p $HOME/.kube;
-      sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config;
-      sudo chown $(id -u):$(id -g) $HOME/.kube/config;
-    fi
+- name: Create directory for kubectl
+  file:
+    path: "${HOME}/.kube"
+    state: directory
+- name: Copy kubeconfig
+  copy:
+    remote_src: yes
+    src: /etc/kubernetes/admin.conf
+    dest: "${HOME}/.kube/config"
+    owner: "root"
+    group: "root"
 
 - name: Create cluster join token
   shell: kubeadm token create
   register: kuber_token
+
 - name: "CA Hash"
   shell: openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
   register: ca_hash
@@ -29,5 +42,6 @@
     token: " {{ kuber_token.stdout }} "
     hash: "{{ ca_hash.stdout }}"
 
-- name: Install network plugin
+- name: install network plugin
   shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+  changed_when: init_out.rc > 0

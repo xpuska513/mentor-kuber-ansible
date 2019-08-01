@@ -1,11 +1,35 @@
-- name: Install and configure mysql
-  roles: 
-    - mysql
-  hosts: mysql
+# - name: Install and configure mysql
+#   roles: 
+#     - mysql
+#   hosts: tag_masters
+#   become: yes
+
+- name: Init the mysql cluster
+  roles:
+    - mysql-replication
+  vars:
+    mysql_upstream_package: true
+    mysql_group_replication: true
+    mysql_group_replication_multi_primary: true
+    mysql_proxysql_backend_config: false
+    mysql_repl_require_ssl: false
+    mysql_root_pass: 130360az
+    mysql_repl_user: repl
+    mysql_repl_pass: 130360az
+    mysql_databases:
+      - name: "petclinic"
+    mysql_users:
+      - name: "petclinic"
+        password: "petclinic"
+        priv: "petclinic.*:ALL"
+        host: "%"
+  hosts: 
+    - tag_masters
+    - tag_workers
   become: yes
 
 - name: Kubernetes master
-  hosts: kubernetes_master
+  hosts: tag_masters
   become: yes
   roles:
     - kubernetes_prepeare
@@ -13,7 +37,7 @@
   
 
 - name: Kubernetes worker
-  hosts: kubernetes_workers
+  hosts: tag_workers
   become: yes
   roles:
     - kubernetes_prepeare
